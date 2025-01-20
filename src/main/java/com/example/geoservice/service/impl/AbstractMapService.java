@@ -52,7 +52,7 @@ public abstract class AbstractMapService implements MapService {
      * @throws RuntimeException 当API调用失败时抛出，包含具体的错误信息
      */
     protected void validateResponse(int status, String message) {
-        if (status != 200) {
+        if (status != 200 && status != 404) {
             throw new RuntimeException("API调用失败: " + message);
         }
     }

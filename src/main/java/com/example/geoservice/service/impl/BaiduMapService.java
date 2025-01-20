@@ -1,6 +1,7 @@
 package com.example.geoservice.service.impl;
 
 import com.example.geoservice.config.MapServiceProperties;
+import com.example.geoservice.model.AddressInfo;
 import com.example.geoservice.model.Location;
 import com.fasterxml.jackson.databind.JsonNode;
 import okhttp3.HttpUrl;
@@ -74,5 +75,52 @@ public class BaiduMapService extends AbstractMapService {
                 .path(0)
                 .path("distance")
                 .asDouble();
+    }
+
+    @Override
+    public AddressInfo geocodeAddress(String address) throws IOException {
+        // 构建请求URL，添加必要的查询参数
+        HttpUrl url = HttpUrl.parse(properties.getBaseUrl() + "/geocoding/v3")
+                .newBuilder()
+                .addQueryParameter("address", address)
+                .addQueryParameter("ak", properties.getApiKey())
+                .addQueryParameter("output", "json")
+                .build();
+
+        // 构建并执行HTTP请求
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        String response = executeRequest(request);
+        JsonNode root = objectMapper.readTree(response);
+
+        // 验证响应状态（百度地图使用0表示成功）
+        int status = root.path("status").asInt();
+        validateResponse(status == 0 ? 200 : (status == 1 ? 404 : 400), root.path("message").asText());
+
+        // 如果没有找到地址，返回空的地址信息对象
+        if (root.path("result").isEmpty()) {
+            return new AddressInfo();
+        }
+
+        // 解析响应数据
+        JsonNode result = root.path("result");
+        JsonNode location = result.path("location");
+        JsonNode addressComponent = result.path("addressComponent");
+
+        // 构建地址信息对象
+        AddressInfo addressInfo = new AddressInfo();
+        addressInfo.setLatitude(location.path("lat").asDouble());
+        addressInfo.setLongitude(location.path("lng").asDouble());
+        addressInfo.setProvince(addressComponent.path("province").asText());
+        addressInfo.setCity(addressComponent.path("city").asText());
+        addressInfo.setDistrict(addressComponent.path("district").asText());
+        addressInfo.setStreet(addressComponent.path("street").asText());
+        addressInfo.setStreetNumber(addressComponent.path("street_number").asText());
+        addressInfo.setFormattedAddress(result.path("formatted_address").asText());
+        addressInfo.setConfidence(result.path("confidence").asDouble());
+
+        return addressInfo;
     }
 }

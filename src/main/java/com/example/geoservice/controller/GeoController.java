@@ -1,15 +1,13 @@
 package com.example.geoservice.controller;
 
+import com.example.geoservice.model.AddressInfo;
 import com.example.geoservice.model.Location;
 import com.example.geoservice.service.MapService;
 import com.example.geoservice.service.MapServiceFactory;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -34,5 +32,14 @@ public class GeoController {
         }
         MapService mapService = mapServiceFactory.getMapService();
         return mapService.calculateDrivingDistance(locations.get(0), locations.get(1));
+    }
+
+    @Operation(summary = "解析地址", description = "根据输入的地址字符串，返回详细的地址信息，包括经纬度坐标")
+    @GetMapping("/geocode")
+    public AddressInfo geocodeAddress(
+            @Parameter(description = "需要解析的地址字符串")
+            @RequestParam String address) throws IOException {
+        MapService mapService = mapServiceFactory.getMapService();
+        return mapService.geocodeAddress(address);
     }
 }

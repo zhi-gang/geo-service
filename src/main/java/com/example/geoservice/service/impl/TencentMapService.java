@@ -1,6 +1,7 @@
 package com.example.geoservice.service.impl;
 
 import com.example.geoservice.config.MapServiceProperties;
+import com.example.geoservice.model.AddressInfo;
 import com.example.geoservice.model.Location;
 import com.fasterxml.jackson.databind.JsonNode;
 import okhttp3.HttpUrl;
@@ -79,6 +80,56 @@ public class TencentMapService extends AbstractMapService {
                 .path(0)
                 .path("distance")
                 .asDouble();
+    }
+
+    @Override
+    public AddressInfo geocodeAddress(String address) throws IOException {
+        // 构建请求URL，添加必要的查询参数
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(properties.getBaseUrl() + "/geocoder/v1")
+                .newBuilder()
+                .addQueryParameter("address", address)
+                .addQueryParameter("key", properties.getApiKey())
+                .addQueryParameter("output", "json");
+
+        // 计算并添加签名
+        String sig = calculateSignature(urlBuilder.build());
+        urlBuilder.addQueryParameter("sig", sig);
+
+        // 构建并执行HTTP请求
+        Request request = new Request.Builder()
+                .url(urlBuilder.build())
+                .build();
+
+        String response = executeRequest(request);
+        JsonNode root = objectMapper.readTree(response);
+
+        // 验证响应状态
+        int status = root.path("status").asInt();
+        validateResponse(status == 0 ? 200 : (status == 121 ? 404 : 400), root.path("message").asText());
+
+        // 如果没有找到地址，返回空的地址信息对象
+        if (root.path("result").isEmpty()) {
+            return new AddressInfo();
+        }
+
+        // 解析响应数据
+        JsonNode result = root.path("result");
+        JsonNode location = result.path("location");
+        JsonNode addressComponent = result.path("address_components");
+
+        // 构建地址信息对象
+        AddressInfo addressInfo = new AddressInfo();
+        addressInfo.setLatitude(location.path("lat").asDouble());
+        addressInfo.setLongitude(location.path("lng").asDouble());
+        addressInfo.setProvince(addressComponent.path("province").asText());
+        addressInfo.setCity(addressComponent.path("city").asText());
+        addressInfo.setDistrict(addressComponent.path("district").asText());
+        addressInfo.setStreet(addressComponent.path("street").asText());
+        addressInfo.setStreetNumber(addressComponent.path("street_number").asText());
+        addressInfo.setFormattedAddress(result.path("address").asText());
+        addressInfo.setConfidence(result.path("reliability").asDouble() / 10.0); // 腾讯地图可信度为0-10，转换为0-1
+
+        return addressInfo;
     }
 
     /**
