@@ -9,6 +9,8 @@ import okhttp3.Request;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Google地图服务实现类
@@ -81,7 +83,7 @@ public class GoogleMapService extends AbstractMapService {
     }
 
     @Override
-    public AddressInfo geocodeAddress(String address) throws IOException {
+    public List<AddressInfo> geocodeAddress(String address) throws IOException {
         // 构建请求URL，添加必要的查询参数
         HttpUrl url = HttpUrl.parse(properties.getBaseUrl() + "/geocode/json")
                 .newBuilder()
@@ -102,52 +104,57 @@ public class GoogleMapService extends AbstractMapService {
         String status = root.path("status").asText();
         validateResponse("OK".equals(status) ? 200 : ("ZERO_RESULTS".equals(status) ? 404 : 400), root.path("error_message").asText(""));
 
-        // 如果没有找到地址，返回空的地址信息对象
+        List<AddressInfo> addressInfoList = new ArrayList<>();
+
+        // 如果没有找到地址，返回空列表
         if (root.path("results").isEmpty()) {
-            return new AddressInfo();
+            return addressInfoList;
         }
 
-        // 解析响应数据
-        JsonNode result = root.path("results").path(0);
-        JsonNode location = result.path("geometry").path("location");
-        JsonNode addressComponents = result.path("address_components");
+        // 遍历所有结果
+        for (JsonNode result : root.path("results")) {
+            JsonNode location = result.path("geometry").path("location");
+            JsonNode addressComponents = result.path("address_components");
 
-        // 构建地址信息对象
-        AddressInfo addressInfo = new AddressInfo();
-        addressInfo.setLatitude(location.path("lat").asDouble());
-        addressInfo.setLongitude(location.path("lng").asDouble());
+            // 构建地址信息对象
+            AddressInfo addressInfo = new AddressInfo();
+            addressInfo.setLatitude(location.path("lat").asDouble());
+            addressInfo.setLongitude(location.path("lng").asDouble());
 
-        // 解析地址组件
-        for (JsonNode component : addressComponents) {
-            String type = component.path("types").path(0).asText();
-            String value = component.path("long_name").asText();
+            // 解析地址组件
+            for (JsonNode component : addressComponents) {
+                String type = component.path("types").path(0).asText();
+                String value = component.path("long_name").asText();
 
-            switch (type) {
-                case "administrative_area_level_1":
-                    addressInfo.setProvince(value);
-                    break;
-                case "locality":
-                    addressInfo.setCity(value);
-                    break;
-                case "sublocality_level_1":
-                    addressInfo.setDistrict(value);
-                    break;
-                case "route":
-                    addressInfo.setStreet(value);
-                    break;
-                case "street_number":
-                    addressInfo.setStreetNumber(value);
-                    break;
-                case "postal_code":
-                    addressInfo.setPostalCode(value);
-                    break;
+                switch (type) {
+                    case "administrative_area_level_1":
+                        addressInfo.setProvince(value);
+                        break;
+                    case "locality":
+                        addressInfo.setCity(value);
+                        break;
+                    case "sublocality_level_1":
+                        addressInfo.setDistrict(value);
+                        break;
+                    case "route":
+                        addressInfo.setStreet(value);
+                        break;
+                    case "street_number":
+                        addressInfo.setStreetNumber(value);
+                        break;
+                    case "postal_code":
+                        addressInfo.setPostalCode(value);
+                        break;
+                }
             }
+
+            addressInfo.setFormattedAddress(result.path("formatted_address").asText());
+            // Google Maps API 没有直接提供置信度，这里设置为1.0表示来自官方API
+            addressInfo.setConfidence(1.0);
+
+            addressInfoList.add(addressInfo);
         }
 
-        addressInfo.setFormattedAddress(result.path("formatted_address").asText());
-        // Google Maps API 没有直接提供置信度，这里设置为1.0表示来自官方API
-        addressInfo.setConfidence(1.0);
-
-        return addressInfo;
+        return addressInfoList;
     }
 }

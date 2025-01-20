@@ -9,6 +9,8 @@ import okhttp3.Request;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * 百度地图服务实现类
@@ -79,7 +81,7 @@ public class BaiduMapService extends AbstractMapService {
     }
 
     @Override
-    public AddressInfo geocodeAddress(String address) throws IOException {
+    public List<AddressInfo> geocodeAddress(String address) throws IOException {
         // 构建请求URL，添加必要的查询参数
         HttpUrl url = HttpUrl.parse(properties.getBaseUrl() + "/geocoding/v3")
                 .newBuilder()
@@ -87,6 +89,7 @@ public class BaiduMapService extends AbstractMapService {
                 .addQueryParameter("ak", properties.getApiKey())
                 .addQueryParameter("output", "json")
                 .addQueryParameter("language", properties.getLanguage())
+                .addQueryParameter("ret_coordtype", "gcj02ll") // 返回国测局坐标
                 .build();
 
         // 构建并执行HTTP请求
@@ -101,9 +104,11 @@ public class BaiduMapService extends AbstractMapService {
         int status = root.path("status").asInt();
         validateResponse(status == 0 ? 200 : (status == 1 ? 404 : 400), root.path("message").asText());
 
-        // 如果没有找到地址，返回空的地址信息对象
+        List<AddressInfo> addressInfoList = new ArrayList<>();
+
+        // 如果没有找到地址，返回空列表
         if (root.path("result").isEmpty()) {
-            return new AddressInfo();
+            return addressInfoList;
         }
 
         // 解析响应数据
@@ -123,6 +128,8 @@ public class BaiduMapService extends AbstractMapService {
         addressInfo.setFormattedAddress(result.path("formatted_address").asText());
         addressInfo.setConfidence(result.path("confidence").asDouble());
 
-        return addressInfo;
+        addressInfoList.add(addressInfo);
+
+        return addressInfoList;
     }
 }

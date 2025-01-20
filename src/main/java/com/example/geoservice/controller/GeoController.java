@@ -36,7 +36,7 @@ public class GeoController {
 
     @Operation(summary = "解析地址", description = "根据输入的地址字符串，返回详细的地址信息，包括经纬度坐标")
     @GetMapping("/geocode")
-    public AddressInfo geocodeAddress(
+    public List<AddressInfo> geocodeAddress(
             @Parameter(description = "需要解析的地址字符串")
             @RequestParam String address) throws IOException {
         MapService mapService = mapServiceFactory.getMapService();

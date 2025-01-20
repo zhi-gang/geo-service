@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * 腾讯地图服务实现类
@@ -84,7 +86,7 @@ public class TencentMapService extends AbstractMapService {
     }
 
     @Override
-    public AddressInfo geocodeAddress(String address) throws IOException {
+    public List<AddressInfo> geocodeAddress(String address) throws IOException {
         // 构建请求URL，添加必要的查询参数
         HttpUrl.Builder urlBuilder = HttpUrl.parse(properties.getBaseUrl() + "/geocoder/v1")
                 .newBuilder()
@@ -109,9 +111,11 @@ public class TencentMapService extends AbstractMapService {
         int status = root.path("status").asInt();
         validateResponse(status == 0 ? 200 : (status == 121 ? 404 : 400), root.path("message").asText());
 
-        // 如果没有找到地址，返回空的地址信息对象
+        List<AddressInfo> addressInfoList = new ArrayList<>();
+
+        // 如果没有找到地址，返回空列表
         if (root.path("result").isEmpty()) {
-            return new AddressInfo();
+            return addressInfoList;
         }
 
         // 解析响应数据
@@ -131,7 +135,9 @@ public class TencentMapService extends AbstractMapService {
         addressInfo.setFormattedAddress(result.path("address").asText());
         addressInfo.setConfidence(result.path("reliability").asDouble() / 10.0); // 腾讯地图可信度为0-10，转换为0-1
 
-        return addressInfo;
+        addressInfoList.add(addressInfo);
+
+        return addressInfoList;
     }
 
     /**
