@@ -56,7 +56,8 @@ public class TencentMapService extends AbstractMapService {
                 .addQueryParameter("from", origin.getLatitude() + "," + origin.getLongitude())
                 .addQueryParameter("to", destination.getLatitude() + "," + destination.getLongitude())
                 .addQueryParameter("key", properties.getApiKey())
-                .addQueryParameter("output", "json");
+                .addQueryParameter("output", "json")
+                .addQueryParameter("language", properties.getLanguage());
 
         // 计算并添加签名
         String sig = calculateSignature(urlBuilder.build());
@@ -89,7 +90,8 @@ public class TencentMapService extends AbstractMapService {
                 .newBuilder()
                 .addQueryParameter("address", address)
                 .addQueryParameter("key", properties.getApiKey())
-                .addQueryParameter("output", "json");
+                .addQueryParameter("output", "json")
+                .addQueryParameter("language", properties.getLanguage());
 
         // 计算并添加签名
         String sig = calculateSignature(urlBuilder.build());

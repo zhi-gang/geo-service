@@ -55,6 +55,7 @@ public class GoogleMapService extends AbstractMapService {
                 .addQueryParameter("destination", destination.getLatitude() + "," + destination.getLongitude())
                 .addQueryParameter("key", properties.getApiKey())
                 .addQueryParameter("mode", "driving")
+                .addQueryParameter("language", properties.getLanguage())
                 .build();
 
         // 构建并执行HTTP请求
@@ -86,6 +87,7 @@ public class GoogleMapService extends AbstractMapService {
                 .newBuilder()
                 .addQueryParameter("address", address)
                 .addQueryParameter("key", properties.getApiKey())
+                .addQueryParameter("language", properties.getLanguage())
                 .build();
 
         // 构建并执行HTTP请求

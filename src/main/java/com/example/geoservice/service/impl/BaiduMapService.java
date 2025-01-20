@@ -55,6 +55,7 @@ public class BaiduMapService extends AbstractMapService {
                 .addQueryParameter("destination", destination.getLatitude() + "," + destination.getLongitude())
                 .addQueryParameter("ak", properties.getApiKey())
                 .addQueryParameter("output", "json")
+                .addQueryParameter("language", properties.getLanguage())
                 .build();
 
         // 构建并执行HTTP请求
@@ -85,6 +86,7 @@ public class BaiduMapService extends AbstractMapService {
                 .addQueryParameter("address", address)
                 .addQueryParameter("ak", properties.getApiKey())
                 .addQueryParameter("output", "json")
+                .addQueryParameter("language", properties.getLanguage())
                 .build();
 
         // 构建并执行HTTP请求
