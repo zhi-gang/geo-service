@@ -55,8 +55,8 @@ public class TencentMapService extends AbstractMapService {
         // 构建请求URL，添加必要的查询参数
         HttpUrl.Builder urlBuilder = HttpUrl.parse(properties.getBaseUrl() + "/direction/v1/driving")
                 .newBuilder()
-                .addQueryParameter("from", origin.getLatitude() + "," + origin.getLongitude())
-                .addQueryParameter("to", destination.getLatitude() + "," + destination.getLongitude())
+                .addQueryParameter("from", origin.getLat() + "," + origin.getLng())
+                .addQueryParameter("to", destination.getLat() + "," + destination.getLng())
                 .addQueryParameter("key", properties.getApiKey())
                 .addQueryParameter("output", "json")
                 .addQueryParameter("language", properties.getLanguage());

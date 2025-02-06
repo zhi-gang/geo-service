@@ -40,11 +40,11 @@ class BaiduMapServiceTest {
     void shouldCalculateDrivingDistance() throws IOException {
         // Given
         Location origin = new Location();
-        origin.setLatitude(39.915);
-        origin.setLongitude(116.404);
+        origin.setLat(39.915);
+        origin.setLng(116.404);
         Location destination = new Location();
-        destination.setLatitude(31.230);
-        destination.setLongitude(121.473);
+        destination.setLat(31.230);
+        destination.setLng(121.473);
         String mockResponse = "{\"status\": 0, \"message\": \"ok\", \"result\": {\"routes\": [{\"distance\": 1234.56}]}}";
 
         doReturn(mockResponse).when(baiduMapService).executeRequest(any());
@@ -60,11 +60,11 @@ class BaiduMapServiceTest {
     void shouldThrowExceptionWhenApiReturnsError() throws IOException {
         // Given
         Location origin = new Location();
-        origin.setLatitude(39.915);
-        origin.setLongitude(116.404);
+        origin.setLat(39.915);
+        origin.setLng(116.404);
         Location destination = new Location();
-        destination.setLatitude(31.230);
-        destination.setLongitude(121.473);
+        destination.setLat(31.230);
+        destination.setLng(121.473);
         String mockResponse = "{\"status\": 1, \"message\": \"error message\"}";
 
         doReturn(mockResponse).when(baiduMapService).executeRequest(any());

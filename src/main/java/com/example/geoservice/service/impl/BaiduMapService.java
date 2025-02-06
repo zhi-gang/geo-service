@@ -53,8 +53,8 @@ public class BaiduMapService extends AbstractMapService {
         // 构建请求URL，添加必要的查询参数
         HttpUrl url = HttpUrl.parse(properties.getBaseUrl() + "/direction/v2/driving")
                 .newBuilder()
-                .addQueryParameter("origin", origin.getLatitude() + "," + origin.getLongitude())
-                .addQueryParameter("destination", destination.getLatitude() + "," + destination.getLongitude())
+                .addQueryParameter("origin", origin.getLat() + "," + origin.getLng())
+                .addQueryParameter("destination", destination.getLat() + "," + destination.getLng())
                 .addQueryParameter("ak", properties.getApiKey())
                 .addQueryParameter("output", "json")
                 .addQueryParameter("language", properties.getLanguage())
