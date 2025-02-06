@@ -1,5 +1,6 @@
 package com.example.geoservice.exception;
 
+import com.example.geoservice.controller.GeoController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -9,7 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestControllerAdvice
+@RestControllerAdvice(assignableTypes = GeoController.class)
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
